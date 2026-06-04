@@ -1,0 +1,134 @@
+openapi: 3.0.3
+info:
+  title: BikeFlow API - JCDecaux Operations Wrapper
+  description: API interna de alto rendimiento para la monitorización, analítica y gestión operativa de los sistemas de bicicletas públicas de Valencia y Sevilla.
+  version: 1.0.0
+  contact:
+    name: Yago Menéndez de la Vega Sepúlveda
+    email: developer@jcdecaux.com
+servers:
+  - url: http://localhost:3000
+    description: Servidor de Desarrollo Local
+paths:
+  /api/stations:
+    get:
+      summary: Obtener el cuadro de mando operativo de un contrato
+      description: Recupera en tiempo real los metadatos del sistema, indicadores clave de rendimiento (KPIs) y el estado de todas las estaciones filtradas por contrato.
+      parameters:
+        - name: contract
+          in: query
+          description: Nombre identificador del contrato corporativo a consultar.
+          required: true
+          schema:
+            type: string
+            enum: [valence, seville]
+      responses:
+        '200':
+          description: Datos operativos cargados y procesados con éxito.
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+              description: Directiva de caché pública configurada para 60 segundos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationalDashboard'
+        '400':
+          description: Error en la petición (Contrato inválido o ausente).
+        '500':
+          description: Error interno del servidor al procesar los feeds externos.
+
+components:
+  schemas:
+    OperationalDashboard:
+      type: object
+      properties:
+        system:
+          type: object
+          properties:
+            name:
+              type: string
+              example: Valenbisi
+            operator:
+              type: string
+              example: JCDecaux
+            city:
+              type: string
+              example: valence
+        kpis:
+          type: object
+          properties:
+            totalStations:
+              type: integer
+              example: 275
+            openStations:
+              type: integer
+              example: 270
+            closedStations:
+              type: integer
+              example: 5
+            totalBikesAvailable:
+              type: integer
+              example: 1420
+            totalStandsAvailable:
+              type: integer
+              example: 1150
+            criticalEmptyStations:
+              type: integer
+              description: Estaciones operativas con cero bicicletas disponibles.
+              example: 12
+            criticalFullStations:
+              type: integer
+              description: Estaciones operativas con cero anclajes libres.
+              example: 4
+        stations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Station'
+
+    Station:
+      type: object
+      properties:
+        id:
+          type: string
+          example: valence-102
+        number:
+          type: string
+          example: "102"
+        contractName:
+          type: string
+          enum: [valence, seville]
+        name:
+          type: string
+          example: "0102_REYES CATOLICOS"
+        address:
+          type: string
+          example: "ALAMEDA REYES CATOLICOS"
+        status:
+          type: string
+          enum: [OPEN, CLOSED]
+        position:
+          type: object
+          properties:
+            latitude:
+              type: number
+              format: float
+              example: 39.4697
+            longitude:
+              type: number
+              format: float
+              example: -0.3774
+        capacity:
+          type: integer
+          example: 25
+        bikesAvailable:
+          type: integer
+          example: 14
+        standsAvailable:
+          type: integer
+          example: 11
+        lastUpdate:
+          type: string
+          format: date-time
+          example: "2026-06-03T13:12:17.014Z"
