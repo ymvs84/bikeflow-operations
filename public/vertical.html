@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-slate-950 text-slate-100">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BikeFlow Operations — Visor Vertical Dual</title>
+  <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+  <style>
+    body {
+      width: 1080px;
+      height: 1920px;
+      margin: 0 auto;
+      overflow: hidden;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+  </style>
+</head>
+<body class="flex flex-col h-full border-4 border-slate-800 rounded-lg shadow-2xl overflow-hidden">
+
+  <!-- HEADER UNIFICADO (Alto fijo: 90px) -->
+  <header class="h-[90px] shrink-0 bg-slate-900 border-b border-slate-800 px-6 flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-3">
+        <span>🚲</span> JCDecaux — Centro de Control Dual GBFS
+      </h1>
+      <p class="text-xs text-slate-400 mt-1">Monitorización simultánea de redes terrestres de España</p>
+    </div>
+    <div class="text-right">
+      <div id="clock" class="text-2xl font-mono font-bold text-emerald-400">--:--:--</div>
+      <span class="text-xs text-slate-500 uppercase tracking-wider">Refresco: 60s</span>
+    </div>
+  </header>
+
+  <!-- CONTENEDOR PRINCIPAL DUAL (50% / 50%) -->
+  <main class="flex-1 flex flex-col gap-4 p-4 overflow-hidden">
+
+    <!-- SECCIÓN 1: VALENCIA (VALENBISI) -->
+    <section class="flex-1 h-[845px] bg-slate-900/80 border border-slate-800 rounded-xl p-5 flex flex-col justify-between overflow-hidden">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-2 shrink-0">
+        <h2 class="text-xl font-bold text-amber-400 flex items-center gap-2">
+          <span>🟡</span> Valenbisi (Valencia)
+        </h2>
+        <span id="val-updated" class="text-xs font-mono text-slate-400">Cargando...</span>
+      </div>
+
+      <div class="grid grid-cols-4 gap-3 my-3 text-center shrink-0">
+        <div class="bg-slate-800/60 p-3 rounded-lg border border-slate-700/50">
+          <span class="block text-xs text-slate-400">Estaciones</span>
+          <span id="val-kpi-total" class="text-xl font-bold text-white">--</span>
+        </div>
+        <div class="bg-slate-800/60 p-3 rounded-lg border border-slate-700/50">
+          <span class="block text-xs text-slate-400">Flota Bicis</span>
+          <span id="val-kpi-bikes" class="text-xl font-bold text-emerald-400">--</span>
+        </div>
+        <div class="bg-orange-950/40 p-3 rounded-lg border border-orange-800/40">
+          <span class="block text-xs text-orange-300">Vacías (0 Bicis)</span>
+          <span id="val-kpi-empty" class="text-xl font-bold text-orange-400">--</span>
+        </div>
+        <div class="bg-red-950/40 p-3 rounded-lg border border-red-800/40">
+          <span class="block text-xs text-red-300">Saturadas (0 Bornas)</span>
+          <span id="val-kpi-full" class="text-xl font-bold text-red-400">--</span>
+        </div>
+      </div>
+
+      <div class="flex-1 overflow-y-auto pr-1">
+        <h3 class="text-xs uppercase tracking-wider text-slate-400 mb-2 font-semibold">Alertas de Balance Urgente</h3>
+        <div id="val-critical-list" class="space-y-2"></div>
+      </div>
+    </section>
+
+    <!-- SECCIÓN 2: SEVILLA (SEVICI) -->
+    <section class="flex-1 h-[845px] bg-slate-900/80 border border-slate-800 rounded-xl p-5 flex flex-col justify-between overflow-hidden">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-2 shrink-0">
+        <h2 class="text-xl font-bold text-emerald-400 flex items-center gap-2">
+          <span>🟢</span> SEVIci (Sevilla)
+        </h2>
+        <span id="sev-updated" class="text-xs font-mono text-slate-400">Cargando...</span>
+      </div>
+
+      <div class="grid grid-cols-4 gap-3 my-3 text-center shrink-0">
+        <div class="bg-slate-800/60 p-3 rounded-lg border border-slate-700/50">
+          <span class="block text-xs text-slate-400">Estaciones</span>
+          <span id="sev-kpi-total" class="text-xl font-bold text-white">--</span>
+        </div>
+        <div class="bg-slate-800/60 p-3 rounded-lg border border-slate-700/50">
+          <span class="block text-xs text-slate-400">Flota Bicis</span>
+          <span id="sev-kpi-bikes" class="text-xl font-bold text-emerald-400">--</span>
+        </div>
+        <div class="bg-orange-950/40 p-3 rounded-lg border border-orange-800/40">
+          <span class="block text-xs text-orange-300">Vacías (0 Bicis)</span>
+          <span id="sev-kpi-empty" class="text-xl font-bold text-orange-400">--</span>
+        </div>
+        <div class="bg-red-950/40 p-3 rounded-lg border border-red-800/40">
+          <span class="block text-xs text-red-300">Saturadas (0 Bornas)</span>
+          <span id="sev-kpi-full" class="text-xl font-bold text-red-400">--</span>
+        </div>
+      </div>
+
+      <div class="flex-1 overflow-y-auto pr-1">
+        <h3 class="text-xs uppercase tracking-wider text-slate-400 mb-2 font-semibold">Alertas de Balance Urgente</h3>
+        <div id="sev-critical-list" class="space-y-2"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    setInterval(() => {
+      document.getElementById('clock').innerText = new Date().toLocaleTimeString('es-ES');
+    }, 1000);
+
+    async function loadDualDashboard() {
+      try {
+        const [resVal, resSev] = await Promise.all([
+          fetch('/api/stations?contract=valence'),
+          fetch('/api/stations?contract=seville')
+        ]);
+
+        const dataVal = await resVal.json();
+        const dataSev = await resSev.json();
+
+        updateCityUI('val', dataVal);
+        updateCityUI('sev', dataSev);
+      } catch (err) {
+        console.error('Error cargando feeds GBFS:', err);
+      }
+    }
+
+    function updateCityUI(prefix, data) {
+      if (!data || !data.kpis) return;
+
+      document.getElementById(`${prefix}-kpi-total`).innerText = data.kpis.totalStations || 0;
+      document.getElementById(`${prefix}-kpi-bikes`).innerText = data.kpis.totalBikesAvailable || 0;
+      document.getElementById(`${prefix}-kpi-empty`).innerText = data.kpis.criticalEmptyStations || 0;
+      document.getElementById(`${prefix}-kpi-full`).innerText = data.kpis.criticalFullStations || 0;
+      document.getElementById(`${prefix}-updated`).innerText = new Date().toLocaleTimeString('es-ES');
+
+      // Mapeo exacto contra las propiedades del dominio de tu backend: bikesAvailable y standsAvailable
+      const criticalStations = (data.stations || []).filter(s =>
+        s.status === 'OPEN' && (s.bikesAvailable === 0 || s.standsAvailable === 0)
+      ).slice(0, 5);
+
+      const listContainer = document.getElementById(`${prefix}-critical-list`);
+
+      if (criticalStations.length === 0) {
+        listContainer.innerHTML = `<div class="text-xs text-emerald-400 bg-emerald-950/30 p-3 rounded-lg border border-emerald-900/40">🟢 Red completamente equilibrada. Sin alertas críticas.</div>`;
+        return;
+      }
+
+      listContainer.innerHTML = criticalStations.map(s => {
+        const isEmpty = s.bikesAvailable === 0;
+        const badgeColor = isEmpty ? 'bg-orange-500/20 text-orange-400 border-orange-500/30' : 'bg-red-500/20 text-red-400 border-red-500/30';
+        const label = isEmpty ? '⚠️ REPARTO REQUERIDO (0 Bicis)' : '🚨 DESCARGA URGENTE (0 Bornas)';
+
+        return `
+          <div class="flex justify-between items-center p-3 rounded-lg bg-slate-800/80 border border-slate-700/60">
+            <div>
+              <p class="text-sm font-semibold text-slate-100">${s.name}</p>
+              <span class="inline-block text-[10px] font-bold px-2 py-0.5 rounded border ${badgeColor} mt-1">${label}</span>
+            </div>
+            <div class="text-right font-mono text-xs">
+              <span class="text-emerald-400 font-bold">${s.bikesAvailable}</span>🚲 /
+              <span class="text-slate-400">${s.standsAvailable}</span>🅿️
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    loadDualDashboard();
+    setInterval(loadDualDashboard, 60000);
+  </script>
+</body>
+</html>
