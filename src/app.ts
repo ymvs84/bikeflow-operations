@@ -2,7 +2,8 @@
  * Autor: Yago Menéndez de la Vega Sepúlveda
  * Puesto: IT Support Engineer | Operations
  * Empresa: JCDecaux España
- * * Punto de entrada principal y cableado de dependencias de la API BikeFlow.
+ *
+ * Punto de entrada principal y cableado de dependencias de la API BikeFlow.
  */
 
 import express from 'express';
@@ -15,7 +16,7 @@ import { StationsController } from './modules/stations/infrastructure/http/stati
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = Number(process.env.PORT) || 3000;
 
 app.use(express.json());
 app.use(express.static('public')); // Servir archivos estáticos desde la carpeta 'public'
@@ -25,7 +26,7 @@ const stationRepository = new GbfsStationRepository();
 const getStationsUseCase = new GetStationsUseCase(stationRepository);
 const stationsController = new StationsController(getStationsUseCase);
 
-// Enpoint de control de salud (Health Check)
+// Endpoint de control de salud (Health Check)
 app.get('/health', (req, res) => {
   res.status(200).json({
     status: 'UP',
@@ -37,6 +38,7 @@ app.get('/health', (req, res) => {
 // Endpoint oficial de la API de Movilidad para BikeFlow
 app.get('/api/stations', (req, res) => stationsController.handle(req, res));
 
-app.listen(PORT, () => {
-  console.log(`🚀 Servidor de BikeFlow corriendo en http://localhost:${PORT}`);
+// Configuración de escucha en '0.0.0.0' para abrir el servicio a la red local
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Servidor de BikeFlow activo en red local: http://0.0.0.0:${PORT}`);
 });
