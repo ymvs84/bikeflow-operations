@@ -1,0 +1,17 @@
+version: "3.8"
+
+networks:
+  red-servidor:
+    external: true
+
+services:
+  bikeflow-operations:
+    build: .
+    container_name: bikeflow-operations
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    networks:
+      - red-servidor
